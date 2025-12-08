@@ -21,9 +21,9 @@ void writeValueArray(ValueArray *array, Value value)
 	}
 
 	array->values[array->count] = value;
-	array->count = array->count++;
+	array->count++;
 }
-
+ 
 void freeValueArray(ValueArray *array)
 {
 	FREE_ARRAY(Value, array->values, array->capacity);
@@ -32,5 +32,5 @@ void freeValueArray(ValueArray *array)
 
 void printValue(Value value)
 {
-	printf("%g", value);
+	printf(" %g ", value);
 }

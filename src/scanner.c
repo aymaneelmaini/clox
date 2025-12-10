@@ -1,9 +1,5 @@
-#include <math.h>
-#include <stdlib.h>
 #include <string.h>
-#include <uchar.h>
 
-#include "common.h"
 #include "scanner.h"
 
 typedef struct {
@@ -154,8 +150,7 @@ static TokenType identifier_type()
 	case 'r':
 		return check_keyword(1, 5, "eturn", TOKEN_RETURN);
 	case 's':
-		return check_keyword(1, 4, "uper", TO0KEN_SUPER);
-
+		return check_keyword(1, 4, "uper", TOKEN_SUPER);
 	case 't':
 		if (scanner.current - scanner.start > 1) {
 			switch (scanner.start[1]) {
@@ -165,6 +160,7 @@ static TokenType identifier_type()
 				return check_keyword(2, 2, "ue", TOKEN_TRUE);
 			}
 		}
+        break;
 	case 'v':
 		return check_keyword(1, 2, "ar", TOKEN_VAR);
 	case 'w':

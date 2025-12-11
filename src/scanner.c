@@ -160,7 +160,7 @@ static TokenType identifier_type()
 				return check_keyword(2, 2, "ue", TOKEN_TRUE);
 			}
 		}
-        break;
+		break;
 	case 'v':
 		return check_keyword(1, 2, "ar", TOKEN_VAR);
 	case 'w':

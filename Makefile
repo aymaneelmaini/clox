@@ -6,18 +6,21 @@ LDFLAGS = -lcriterion
 SOURCES = src/scanner.c src/chunk.c src/compiler.c src/debug.c src/memory.c src/value.c src/vm.c
 TEST_SOURCES = tests/scanner_test.c
 
-run: src/main.c  $(SOURCES)
+all: clox
+
+clox: src/main.c $(SOURCES)
 	$(CC) $(CFLAGS) -o clox src/main.c $(SOURCES) -I.
+
+run: clox
 	./clox
 
 test: $(TEST_SOURCES) $(SOURCES)
-	$(CC) $(CTEST_FLAGS) -o test_runner $(TEST_SOURCES) $(SOURCES) -I. $(LDFLAGS) 
+	$(CC) $(CTEST_FLAGS) -o test_runner $(TEST_SOURCES) $(SOURCES) -I. $(LDFLAGS)
 	./test_runner
 
 testf: $(TEST_SOURCES) $(SOURCES)
-	$(CC) $(CTEST_FLAGS) -o test_runner $(TEST_SOURCES) $(SOURCES) -I. $(LDFLAGS) 
+	$(CC) $(CTEST_FLAGS) -o test_runner $(TEST_SOURCES) $(SOURCES) -I. $(LDFLAGS)
 	./test_runner --fail-fast
 
-
-clean: 
+clean:
 	rm -f test_runner clox

@@ -1,12 +1,10 @@
-#include "scanner.h"
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "chunk.h"
 #include "common.h"
 #include "compiler.h"
+#include "scanner.h"
 
 #ifdef DEBUG_PRINT_CODE
 #include "debug.h"
@@ -46,7 +44,6 @@ typedef struct
 } ParseRule;
 
 Parser parser;
-
 Chunk* compiling_chunk;
 
 static Chunk* current_chunk()

@@ -5,6 +5,6 @@
 #include "vm.h"
 #include <stdbool.h>
 
-bool compile(const char *source, Chunk *chunk);
+bool compile(const char* source, Chunk* chunk);
 
 #endif

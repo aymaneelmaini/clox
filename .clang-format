@@ -1,21 +1,52 @@
----
-# Linux kernel coding style
+Language: C
 BasedOnStyle: LLVM
-IndentWidth: 8
-TabWidth: 8
-UseTab: Always
+
+# ==================================================
+# Braces style (Allman / school style)
+# ==================================================
+BreakBeforeBraces: Allman
+
+# ==================================================
+# Indentation (4 spaces, NO tabs)
+# ==================================================
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# ==================================================
+# Line length
+# ==================================================
 ColumnLimit: 80
-BreakBeforeBraces: Linux
-AllowShortIfStatementsOnASingleLine: false
-AllowShortLoopsOnASingleLine: false
+
+# ==================================================
+# Alignment
+# ==================================================
+AlignConsecutiveDeclarations: true
+AlignConsecutiveAssignments: false
+AlignAfterOpenBracket: Align
+
+# ==================================================
+# One-statement-per-line discipline
+# ==================================================
 AllowShortFunctionsOnASingleLine: None
-IndentCaseLabels: false
-PointerAlignment: Right
-SpaceAfterCStyleCast: false
-AlignConsecutiveMacros: true
-AlignConsecutiveDeclarations: false
-AlignTrailingComments: false
-AllowShortBlocksOnASingleLine: false
-AllowShortCaseLabelsOnASingleLine: false
-IndentGotoLabels: false
-ContinuationIndentWidth: 8
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# ==================================================
+# Spacing rules
+# ==================================================
+PointerAlignment: Left
+SpaceBeforeParens: ControlStatements
+
+# ==================================================
+# Keep tables & initializer lists stable
+# ==================================================
+BinPackArguments: true
+BinPackParameters: true
+Cpp11BracedListStyle: true
+
+# ==================================================
+# Comments
+# ==================================================
+ReflowComments: true
+SpacesBeforeTrailingComments: 2

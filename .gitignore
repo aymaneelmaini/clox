@@ -1,0 +1,14 @@
+# Build directories
+build/
+cmake-build-*/
+
+# Executables
+clox
+test_runner
+
+# IDE
+.vscode/
+.idea/
+
+# PDF documentation
+*.pdf

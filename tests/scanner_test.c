@@ -385,7 +385,6 @@ Test(scanner, should_return_error_token_when_unexpected_token_found)
     init_scanner(source);
 
     Token error_token = scan_token();
-    printf("%s", error_token.start);
 
     cr_assert_eq(error_token.type, TOKEN_ERROR);
     cr_assert(strcmp(error_token.start, "Unexpected Character"));

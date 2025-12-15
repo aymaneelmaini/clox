@@ -16,7 +16,7 @@ run: clox
 
 test: $(TEST_SOURCES) $(SOURCES)
 	$(CC) $(CTEST_FLAGS) -o test_runner $(TEST_SOURCES) $(SOURCES) -I. $(LDFLAGS)
-	./test_runner
+	./test_runner $(if $(ARGS),--filter "$(ARGS)")
 
 testf: $(TEST_SOURCES) $(SOURCES)
 	$(CC) $(CTEST_FLAGS) -o test_runner $(TEST_SOURCES) $(SOURCES) -I. $(LDFLAGS)

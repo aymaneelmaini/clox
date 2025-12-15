@@ -57,6 +57,11 @@ static Value peek(int distance)
     return vm.stack_top[-1 - distance];
 }
 
+static bool is_falsey(Value value)
+{
+    return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
+}
+
 static InterpretResult run()
 {
 #define READ_BYTE() (*vm.ip++)
@@ -96,6 +101,26 @@ static InterpretResult run()
             push(constant);
             break;
         }
+        case OP_NIL:
+            push(NIL_VAL);
+            break;
+        case OP_TRUE:
+            push(BOOL_VAL(true));
+            break;
+        case OP_FALSE:
+            push(BOOL_VAL(false));
+            break;
+        case OP_EQUAL:
+            Value v2 = pop();
+            Value v1 = pop();
+            push(BOOL_VAL(values_equal(v1, v2)));
+            break;
+        case OP_GREATER:
+            BINARY_OP(BOOL_VAL, >);
+            break;
+        case OP_LESS:
+            BINARY_OP(BOOL_VAL, <);
+            break;
         case OP_ADD:
             BINARY_OP(NUMBER_VAL, +);
             break;
@@ -107,6 +132,9 @@ static InterpretResult run()
             break;
         case OP_DIVIDE:
             BINARY_OP(NUMBER_VAL, /);
+            break;
+        case OP_NOT:
+            push(BOOL_VAL(is_falsey(pop())));
             break;
         case OP_NEGATE:
             if (!IS_NUMBER(peek(0)))

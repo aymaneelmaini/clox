@@ -9,18 +9,18 @@ TEST_SOURCES = tests/scanner_test.c tests/compiler_test.c
 all: clox
 
 clox: src/main.c $(SOURCES)
-	$(CC) $(CFLAGS) -o clox src/main.c $(SOURCES) -I.
+	@$(CC) $(CFLAGS) -o clox src/main.c $(SOURCES) -I.
 
 run: clox
-	./clox
+	@./clox
 
 test: $(TEST_SOURCES) $(SOURCES)
-	$(CC) $(CTEST_FLAGS) -o test_runner $(TEST_SOURCES) $(SOURCES) -I. $(LDFLAGS)
-	./test_runner $(if $(ARGS),--filter "$(ARGS)")
+	@$(CC) $(CTEST_FLAGS) -o test_runner $(TEST_SOURCES) $(SOURCES) -I. $(LDFLAGS)
+	@./test_runner $(if $(ARGS),--filter "$(ARGS)")
 
 testf: $(TEST_SOURCES) $(SOURCES)
-	$(CC) $(CTEST_FLAGS) -o test_runner $(TEST_SOURCES) $(SOURCES) -I. $(LDFLAGS)
-	./test_runner --fail-fast
+	@$(CC) $(CTEST_FLAGS) -o test_runner $(TEST_SOURCES) $(SOURCES) -I. $(LDFLAGS)
+	@./test_runner --fail-fast
 
 clean:
-	rm -f test_runner clox
+	@rm -f test_runner clox

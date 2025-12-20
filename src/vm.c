@@ -133,10 +133,12 @@ static InterpretResult run()
             push(BOOL_VAL(false));
             break;
         case OP_EQUAL:
+        {
             Value v2 = pop();
             Value v1 = pop();
             push(BOOL_VAL(values_equal(v1, v2)));
             break;
+        }
         case OP_GREATER:
             BINARY_OP(BOOL_VAL, >);
             break;
@@ -182,12 +184,14 @@ static InterpretResult run()
             }
             push(NUMBER_VAL(-AS_NUMBER(pop())));
             break;
-        case OP_RETURN:
+        case OP_PRINT:
         {
             print_value(pop());
             printf("\n");
-            return INTERPRET_OK;
+            break;
         }
+        case OP_RETURN:
+            return INTERPRET_OK;
         }
     }
 

@@ -3,7 +3,7 @@ CFLAGS = -std=c99 -Wall -Wextra -g
 CTEST_FLAGS = -std=c99 -g
 LDFLAGS = -lcriterion
 
-SOURCES = src/scanner.c src/chunk.c src/compiler.c src/debug.c src/memory.c src/value.c src/vm.c src/object.c
+SOURCES = src/scanner.c src/chunk.c src/compiler.c src/debug.c src/memory.c src/value.c src/vm.c src/object.c src/table.c
 TEST_SOURCES = tests/scanner_test.c tests/compiler_test.c
 
 all: clox

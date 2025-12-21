@@ -13,7 +13,8 @@ typedef struct
     uint8_t* ip;  // aka of Instrction Pointer
     Value    stack[STACK_MAX];
     Value*   stack_top;
-    Table*   strings;
+    Table    globals;
+    Table*   strings;  // for string interning just like (string pool in java)
     Obj*     objects;
 } VM;
 

@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
 
 #include "chunk.h"
 #include "common.h"
@@ -37,7 +38,7 @@ typedef enum
     PREC_PRIMARY
 } Precedence;
 
-typedef void (*ParseFn)();
+typedef void (*ParseFn)(bool can_assign);
 
 typedef struct
 {
@@ -178,7 +179,23 @@ static void       declaration();
 static ParseRule* get_rule(TokenType type);
 static void       parse_precedence(Precedence precedence);
 
-static void binary()
+static uint8_t identifier_constant(Token* name)
+{
+    return make_constant(OBJ_VAL(copy_string(name->start, name->length)));
+}
+
+static uint8_t parse_variable(const char* error_message)
+{
+    consume(TOKEN_IDENTIFIER, error_message);
+    return identifier_constant(&parser.previous);
+}
+
+static void define_variable(uint8_t global)
+{
+    emit_bytes(OP_DEFINE_GLOBAL, global);
+}
+
+static void binary(bool can_assign)
 {
     TokenType operator_type = parser.previous.type;
 
@@ -222,7 +239,7 @@ static void binary()
     }
 }
 
-static void literal()
+static void literal(bool can_assign)
 {
     switch (parser.previous.type)
     {
@@ -240,25 +257,42 @@ static void literal()
     }
 }
 
-static void grouping()
+static void grouping(bool can_assign)
 {
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression");
 }
 
-static void number()
+static void number(bool can_assign)
 {
     double value = strtod(parser.previous.start, NULL);
     emit_constant(NUMBER_VAL(value));
 }
 
-static void string()
+static void string(bool can_assign)
 {
     emit_constant(OBJ_VAL(
         copy_string(parser.previous.start + 1, parser.previous.length - 2)));
 }
 
-static void unary()
+static void named_variable(Token name, bool can_assign)
+{
+    uint8_t arg = identifier_constant(&name);
+    if (can_assign && match(TOKEN_EQUAL))
+    {
+        expression();
+        emit_bytes(OP_SET_GLOBAL, arg);
+    }
+    else
+        emit_bytes(OP_GET_GLOBAL, arg);
+}
+
+static void variable(bool can_assign)
+{
+    named_variable(parser.previous, can_assign);
+}
+
+static void unary(bool can_assign)
 {
     TokenType operator_type = parser.previous.type;
 
@@ -297,9 +331,9 @@ ParseRule rules[] = {
     [TOKEN_GREATER_EQUAL]  =  { NULL,      binary,  PREC_COMPARAISON },
     [TOKEN_LESS]           =  { NULL,      binary,  PREC_COMPARAISON },
     [TOKEN_LESS_EQUAL]     =  { NULL,      binary,  PREC_COMPARAISON },
-    [TOKEN_STRING]         =  { string,      NULL,    PREC_NONE        },
+    [TOKEN_STRING]         =  { string,    NULL,    PREC_NONE        },
     [TOKEN_NUMBER]         =  { number,    NULL,    PREC_NONE        },
-    [TOKEN_IDENTIFIER]     =  { NULL,      NULL,    PREC_NONE        },
+    [TOKEN_IDENTIFIER]     =  { variable,  NULL,    PREC_NONE        },
     [TOKEN_AND]            =  { NULL,      NULL,    PREC_NONE        },
     [TOKEN_CLASS]          =  { NULL,      NULL,    PREC_NONE        },
     [TOKEN_ELSE]           =  { NULL,      NULL,    PREC_NONE        },
@@ -330,13 +364,19 @@ static void parse_precedence(Precedence precedence)
         error("Expect expression");
         return;
     }
-    prefix_rule();
+    bool can_assign = precedence <= PREC_ASSIGNMENT;
+    prefix_rule(can_assign);
 
     while (precedence <= get_rule(parser.current.type)->precedence)
     {
         advance();
         ParseFn infix_rule = get_rule(parser.previous.type)->infix;
-        infix_rule();
+        infix_rule(can_assign);
+    }
+
+    if (can_assign && match(TOKEN_EQUAL))
+    {
+        error("Invalid assignment target");
     }
 }
 
@@ -351,6 +391,19 @@ static void expression()
 }
 
 // ---------------------- statements --------------------------
+
+static void var_declaration()
+{
+    uint8_t global = parse_variable("Expect variable name");
+
+    if (match(TOKEN_EQUAL))
+        expression();
+    else
+        emit_byte(OP_NIL);
+
+    consume(TOKEN_SEMICOLON, "Expect ';' after variable declaration");
+    define_variable(global);
+}
 
 static void expression_statement()
 {
@@ -397,7 +450,10 @@ static void synchronize()
 
 static void declaration()
 {
-    statement();
+    if (match(TOKEN_VAR))
+        var_declaration();
+    else
+        statement();
 
     if (parser.panic_mode)
         synchronize();
@@ -406,13 +462,9 @@ static void declaration()
 static void statement()
 {
     if (match(TOKEN_PRINT))
-    {
         print_statement();
-    }
     else
-    {
         expression_statement();
-    }
 }
 
 static inline void init_parser()

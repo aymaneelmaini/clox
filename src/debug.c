@@ -4,13 +4,9 @@
 #include "debug.h"
 #include "value.h"
 
-/**
- * NOTE: I'm noob into c, and i don't know if it's best practice to do this or
- * not but I like to keep impl details at buttom so i put this signatures here
- * to be easy for reader / reviewer to read code fluently
- **/
 static int simple_instruction(const char* name, int offset);
 static int constant_instruction(const char* name, Chunk* chunk, int offset);
+static int byte_instruction(const char* name, Chunk* chunk, int offset);
 
 void disassemble_chunk(Chunk* chunk, const char* name)
 {
@@ -44,6 +40,10 @@ int disassemble_instruction(Chunk* chunk, int offset)
         return simple_instruction("OP_TRUE", offset);
     case OP_POP:
         return simple_instruction("OP_POP", offset);
+    case OP_GET_LOCAL:
+        return byte_instruction("OP_GET_LOCAL", chunk, offset);
+    case OP_SET_LOCAL:
+        return byte_instruction("OP_SET_LOCAL", chunk, offset);
     case OP_GET_GLOBAL:
         return constant_instruction("OP_GET_GLOBAL", chunk, offset);
     case OP_DEFINE_GLOBAL:
@@ -82,6 +82,13 @@ static int simple_instruction(const char* name, int offset)
 {
     printf("%s\n", name);
     return offset + 1;
+}
+
+static int byte_instruction(const char* name, Chunk* chunk, int offset)
+{
+    uint8_t slot = chunk->code[offset + 1];
+    printf("%-16s %4d\n", name, slot);
+    return offset + 2;
 }
 
 static int constant_instruction(const char* name, Chunk* chunk, int offset)

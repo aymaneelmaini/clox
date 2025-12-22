@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 
 #include "chunk.h"
@@ -58,7 +59,7 @@ typedef struct
 {
     Local locals[UINT8_COUNT];
     int   local_count;
-    int   local_depth;
+    int   scope_depth;
 
 } Compiler;
 
@@ -175,7 +176,7 @@ static void emit_constant(Value value)
 static void init_compiler(Compiler* compiler)
 {
     compiler->local_count = 0;
-    compiler->local_depth = 0;
+    compiler->scope_depth = 0;
     current = compiler;
 }
 
@@ -190,12 +191,20 @@ static void end_compiler()
 
 static void begin_scope()
 {
-    current->local_depth++;
+    current->scope_depth++;
 }
 
 static void end_scope()
 {
-    current->local_depth--;
+    current->scope_depth--;
+
+    while (current->local_count > 0 &&
+           current->locals[current->local_count - 1].depth >
+               current->scope_depth)
+    {
+        emit_byte(OP_POP);
+        current->local_count--;
+    }
 }
 
 static void       expression();
@@ -209,14 +218,84 @@ static u8 identifier_constant(Token* name)
     return make_constant(OBJ_VAL(copy_string(name->start, name->length)));
 }
 
+static bool identifiers_equal(Token* t1, Token* t2)
+{
+    if (t1->length != t2->length)
+        return false;
+
+    return memcmp(t1->start, t2->start, t1->length) == 0;
+}
+
+static int resolve_local(Compiler* compiler, Token* name)
+{
+    for (int i = compiler->local_count - 1; i >= 0; i--)
+    {
+        Local* local = &compiler->locals[i];
+        if (identifiers_equal(name, &local->name))
+        {
+            if (local->depth == -1)
+                error("Can't read local variable in its initializer");
+
+            return i;
+        }
+    }
+    return -1;
+}
+
+static void add_local(Token name)
+{
+    if (current->local_count == UINT8_COUNT)
+    {
+        error("Too many variables in function");
+        return;
+    }
+    Local* local = &current->locals[current->local_count++];
+    local->name = name;
+    local->depth = -1;
+}
+
+static void declare_variable()
+{
+    if (current->scope_depth == 0)
+        return;
+
+    Token* name = &parser.previous;
+
+    for (int i = current->local_count - 1; i >= 0; i--)
+    {
+        Local* local = &current->locals[i];
+        if (local->depth != -1 && local->depth < current->scope_depth)
+            break;
+
+        if (identifiers_equal(name, &local->name))
+            error("Already variable with this name in this scope");
+    }
+    add_local(*name);
+}
+
 static u8 parse_variable(char* error_message)
 {
     consume(TOKEN_IDENTIFIER, error_message);
+
+    declare_variable();
+    if (current->scope_depth > 0)
+        return 0;
+
     return identifier_constant(&parser.previous);
+}
+
+static void mark_initialized()
+{
+    current->locals[current->local_count - 1].depth = current->scope_depth;
 }
 
 static void define_variable(u8 global)
 {
+    if (current->scope_depth > 0)
+    {
+        mark_initialized();
+        return;
+    }
     emit_bytes(OP_DEFINE_GLOBAL, global);
 }
 
@@ -302,15 +381,29 @@ static void string(bool can_assign)
 
 static void named_variable(Token name, bool can_assign)
 {
-    u8 arg = identifier_constant(&name);
-    if (can_assign && match(TOKEN_EQUAL))
+    u8  get_op, set_op;
+    int arg = resolve_local(current, &name);
+
+    if (arg != -1)
     {
-        expression();
-        emit_bytes(OP_SET_GLOBAL, arg);
+        get_op = OP_GET_LOCAL;
+        set_op = OP_SET_LOCAL;
     }
     else
     {
-        emit_bytes(OP_GET_GLOBAL, arg);
+        arg = identifier_constant(&name);
+        get_op = OP_GET_GLOBAL;
+        set_op = OP_SET_GLOBAL;
+    }
+
+    if (can_assign && match(TOKEN_EQUAL))
+    {
+        expression();
+        emit_bytes(set_op, (u8)arg);
+    }
+    else
+    {
+        emit_bytes(get_op, (u8)arg);
     }
 }
 

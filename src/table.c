@@ -22,8 +22,8 @@ void free_table(Table* table)
 
 static Entry* find_entry(Entry* entries, int capacity, ObjString* key)
 {
-    uint32_t index = key->hash % capacity;
-    Entry*   tombstone = NULL;
+    u32    index = key->hash % capacity;
+    Entry* tombstone = NULL;
 
     for (;;)
     {
@@ -95,7 +95,7 @@ bool table_set(Table* table, ObjString* key, Value value)
 {
     if (table->count + 1 > table->capacity * TABLE_MAX_LOAD)
     {
-        int capacity = GROW_CAPACITY(capacity);
+        int capacity = GROW_CAPACITY(table->capacity);
         adjust_capacity(table, capacity);
     }
     Entry* entry = find_entry(table->entries, table->capacity, key);
@@ -136,12 +136,12 @@ void table_add_all(Table* from, Table* to)
 }
 
 ObjString* table_find_string(Table* table, const char* chars, int length,
-                             uint32_t hash)
+                             u32 hash)
 {
     if (table->count == 0)
         return NULL;
 
-    uint32_t index = hash % table->capacity;
+    u32 index = hash % table->capacity;
     for (;;)
     {
         Entry* entry = &table->entries[index];

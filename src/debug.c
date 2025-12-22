@@ -31,7 +31,7 @@ int disassemble_instruction(Chunk* chunk, int offset)
     else
         printf("%4d ", chunk->lines[offset]);
 
-    uint8_t instruction = chunk->code[offset];
+    u8 instruction = chunk->code[offset];
     switch (instruction)
     {
     case OP_CONSTANT:
@@ -86,7 +86,7 @@ static int simple_instruction(const char* name, int offset)
 
 static int constant_instruction(const char* name, Chunk* chunk, int offset)
 {
-    uint8_t constantIndex = chunk->code[offset + 1];
+    u8 constantIndex = chunk->code[offset + 1];
     printf("%-16s  %4d ", name, constantIndex);
     print_value(chunk->constants.values[constantIndex]);
     printf("\n");

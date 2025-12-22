@@ -16,13 +16,7 @@
 #define FREE_ARRAY(type, pointer, oldCount)                                    \
     reallocate(pointer, sizeof(type) * (oldCount), 0)
 
-// NOTE: All what's related to memory management in this Clox is managed by this
-// only function
-// old size = 0, new size = non-zeor => allocate new block old
-// size = non-zero, new size = 0 => free allocation old size = non-zero, new
-// size = smaller than old size => shrink existing allocation old size =
-// non-zero, new size = larger than old size => grow existing allocation
-void* reallocate(void* pointer, size_t oldSize, size_t newSize);
+void* reallocate(void* pointer, size_t old_size, size_t new_size);
 void  free_objects();
 
 #endif

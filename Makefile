@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -std=c99 -Wall -Wextra -g
+CFLAGS = -std=c99 -Wall -Wextra  -Wno-unused-parameter -g
 CTEST_FLAGS = -std=c99 -g
 LDFLAGS = -lcriterion
 

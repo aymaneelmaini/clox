@@ -22,7 +22,7 @@ static Obj* allocate_object(size_t size, ObjType type)
     return object;
 }
 
-static ObjString* allocate_string(const char* chars, int length, uint32_t hash)
+static ObjString* allocate_string(char* chars, int length, u32 hash)
 {
     ObjString* string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
     string->length = length;
@@ -34,9 +34,9 @@ static ObjString* allocate_string(const char* chars, int length, uint32_t hash)
     return string;
 }
 
-static uint32_t hash_string(const char* key, int length)
+static u32 hash_string(const char* key, int length)
 {
-    uint32_t hash = 2166136261u;
+    u32 hash = 2166136261u;
 
     for (int i = 0; i < length; i++)
     {
@@ -46,9 +46,9 @@ static uint32_t hash_string(const char* key, int length)
     return hash;
 }
 
-ObjString* take_string(const char* chars, int length)
+ObjString* take_string(char* chars, int length)
 {
-    uint32_t hash = hash_string(chars, length);
+    u32 hash = hash_string(chars, length);
 
     ObjString* interned = table_find_string(&vm.strings, chars, length, hash);
     if (interned != NULL)
@@ -62,7 +62,7 @@ ObjString* take_string(const char* chars, int length)
 
 ObjString* copy_string(const char* chars, int length)
 {
-    uint32_t hash = hash_string(chars, length);
+    u32 hash = hash_string(chars, length);
 
     ObjString* interned = table_find_string(&vm.strings, chars, length, hash);
     if (interned != NULL)

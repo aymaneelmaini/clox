@@ -117,7 +117,7 @@ static InterpretResult run()
         printf("\n");
         disassemble_instruction(vm.chunk, (int)(vm.ip - vm.chunk->code));
 #endif
-        uint8_t instruction;
+        u8 instruction;
         switch (instruction = READ_BYTE())
         {
         case OP_CONSTANT:

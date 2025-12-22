@@ -130,12 +130,12 @@ static bool match(TokenType type)
     return true;
 }
 
-static void emit_byte(uint8_t byte)
+static void emit_byte(u8 byte)
 {
     write_chunk(current_chunk(), byte, parser.previous.line);
 }
 
-static void emit_bytes(uint8_t byte_1, uint8_t byte_2)
+static void emit_bytes(u8 byte_1, u8 byte_2)
 {
     emit_byte(byte_1);
     emit_byte(byte_2);
@@ -146,7 +146,7 @@ static void emit_return()
     emit_byte(OP_RETURN);
 }
 
-static uint8_t make_constant(Value value)
+static u8 make_constant(Value value)
 {
     int constant = add_constant(current_chunk(), value);
 
@@ -156,7 +156,7 @@ static uint8_t make_constant(Value value)
         return 0;
     }
 
-    return (uint8_t)constant;
+    return (u8)constant;
 }
 
 static void emit_constant(Value value)
@@ -179,18 +179,18 @@ static void       declaration();
 static ParseRule* get_rule(TokenType type);
 static void       parse_precedence(Precedence precedence);
 
-static uint8_t identifier_constant(Token* name)
+static u8 identifier_constant(Token* name)
 {
     return make_constant(OBJ_VAL(copy_string(name->start, name->length)));
 }
 
-static uint8_t parse_variable(const char* error_message)
+static u8 parse_variable(char* error_message)
 {
     consume(TOKEN_IDENTIFIER, error_message);
     return identifier_constant(&parser.previous);
 }
 
-static void define_variable(uint8_t global)
+static void define_variable(u8 global)
 {
     emit_bytes(OP_DEFINE_GLOBAL, global);
 }
@@ -277,7 +277,7 @@ static void string(bool can_assign)
 
 static void named_variable(Token name, bool can_assign)
 {
-    uint8_t arg = identifier_constant(&name);
+    u8 arg = identifier_constant(&name);
     if (can_assign && match(TOKEN_EQUAL))
     {
         expression();
@@ -394,7 +394,7 @@ static void expression()
 
 static void var_declaration()
 {
-    uint8_t global = parse_variable("Expect variable name");
+    u8 global = parse_variable("Expect variable name");
 
     if (match(TOKEN_EQUAL))
         expression();

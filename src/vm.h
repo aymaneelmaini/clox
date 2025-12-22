@@ -2,6 +2,7 @@
 #define clox_vm_h
 
 #include "chunk.h"
+#include "common.h"
 #include "table.h"
 #include "value.h"
 
@@ -9,13 +10,13 @@
 
 typedef struct
 {
-    Chunk*   chunk;
-    uint8_t* ip;  // aka of Instrction Pointer
-    Value    stack[STACK_MAX];
-    Value*   stack_top;
-    Table    globals;
-    Table*   strings;  // for string interning just like (string pool in java)
-    Obj*     objects;
+    Chunk* chunk;
+    u8*    ip;  // aka of Instrction Pointer
+    Value  stack[STACK_MAX];
+    Value* stack_top;
+    Table  globals;
+    Table  strings;  // for string interning just like (string pool in java)
+    Obj*   objects;
 } VM;
 
 typedef enum

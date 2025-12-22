@@ -71,13 +71,9 @@ int main(int argc, const char* argv[])
     init_VM();
 
     if (argc == 1)
-    {
         repl();
-    }
     else if (argc == 2)
-    {
         run_file(argv[1]);
-    }
     else
     {
         fprintf(stderr, "Usage: clox [path]\n");

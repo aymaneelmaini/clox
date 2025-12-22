@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-static void assert_bytecode(Chunk* chunk, const uint8_t* expected, int count);
+static void assert_bytecode(Chunk* chunk, const u8* expected, int count);
 static void assert_constants(Chunk* chunk, const double* expected, int count);
 
 Test(compiler, should_compile_expressions)
@@ -14,7 +14,7 @@ Test(compiler, should_compile_expressions)
     init_chunk(&chunk);
     char*   source = "print 3 + 2;";
     bool    result = compile(source, &chunk);
-    uint8_t expected_bytes[] = {OP_CONSTANT, 0,        OP_CONSTANT, 1,
+    u8 expected_bytes[] = {OP_CONSTANT, 0,        OP_CONSTANT, 1,
                                 OP_ADD,      OP_PRINT, OP_RETURN};
     double  expected_constants[] = {3, 2};
     cr_assert_eq(result, true);
@@ -28,7 +28,7 @@ Test(compiler, should_start_with_multiplication)
     init_chunk(&chunk);
     char*   source = "print 3 + 2 * 9;";
     bool    result = compile(source, &chunk);
-    uint8_t expected_bytes[] = {OP_CONSTANT, 0,        OP_CONSTANT, 1,
+    u8 expected_bytes[] = {OP_CONSTANT, 0,        OP_CONSTANT, 1,
                                 OP_CONSTANT, 2,        OP_MULTIPLY, OP_ADD,
                                 OP_PRINT,    OP_RETURN};
     double  expected_constants[] = {3, 2, 9};
@@ -43,7 +43,7 @@ Test(compiler, should_respect_grouping)
     init_chunk(&chunk);
     char*   source = "print 3 + 2 * (9 + 3);";
     bool    result = compile(source, &chunk);
-    uint8_t expected_bytes[] = {OP_CONSTANT, 0,           OP_CONSTANT, 1,
+    u8 expected_bytes[] = {OP_CONSTANT, 0,           OP_CONSTANT, 1,
                                 OP_CONSTANT, 2,           OP_CONSTANT, 3,
                                 OP_ADD,      OP_MULTIPLY, OP_ADD,      OP_PRINT,
                                 OP_RETURN};
@@ -60,7 +60,7 @@ Test(compiler, should_compile_nil)
     char* source = "print nil;";
     bool  result = compile(source, &chunk);
     cr_assert_eq(result, true);
-    assert_bytecode(&chunk, (uint8_t[]){OP_NIL, OP_PRINT, OP_RETURN}, 3);
+    assert_bytecode(&chunk, (u8[]){OP_NIL, OP_PRINT, OP_RETURN}, 3);
 }
 
 Test(compiler, should_compile_booleans)
@@ -70,7 +70,7 @@ Test(compiler, should_compile_booleans)
     char* source = "print true;";
     bool  result = compile(source, &chunk);
     cr_assert_eq(result, true);
-    assert_bytecode(&chunk, (uint8_t[]){OP_TRUE, OP_PRINT, OP_RETURN}, 3);
+    assert_bytecode(&chunk, (u8[]){OP_TRUE, OP_PRINT, OP_RETURN}, 3);
 }
 
 Test(compiler, should_compile_equality_expressions)
@@ -79,7 +79,7 @@ Test(compiler, should_compile_equality_expressions)
     init_chunk(&chunk);
     char*   source = "print 12 == 6 * 2;";
     bool    result = compile(source, &chunk);
-    uint8_t expected_bytecodes[] = {
+    u8 expected_bytecodes[] = {
         OP_CONSTANT, 0,           OP_CONSTANT, 1,        OP_CONSTANT,
         2,           OP_MULTIPLY, OP_EQUAL,    OP_PRINT, OP_RETURN};
     double expected_constants[] = {12, 6, 2};
@@ -87,7 +87,7 @@ Test(compiler, should_compile_equality_expressions)
     assert_bytecode(&chunk, expected_bytecodes, 10);
     assert_constants(&chunk, expected_constants, 3);
 }
-static void assert_bytecode(Chunk* chunk, const uint8_t* expected, int count)
+static void assert_bytecode(Chunk* chunk, const u8* expected, int count)
 {
     cr_assert_eq(chunk->count, count);
     for (int i = 0; i < count; i++)

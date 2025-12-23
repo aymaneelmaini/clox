@@ -1,0 +1,24 @@
+class Vehicle {
+  init(brand) {
+    this.brand = brand;
+  }
+  
+  info() {
+    println("Brand: " + this.brand);
+  }
+}
+
+class Car : Vehicle {
+  init(brand, model) {
+    super.init(brand);
+    this.model = model;
+  }
+  
+  info() {
+    super.info();
+    println("Model: " + this.model);
+  }
+}
+
+var car = Car("Toyota", "Camry");
+car.info();

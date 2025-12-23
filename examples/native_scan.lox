@@ -1,0 +1,3 @@
+var name = scan();
+println("You entered: " + name);
+

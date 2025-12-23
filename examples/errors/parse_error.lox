@@ -1,0 +1,6 @@
+// This file demonstrates parse error reporting
+// Missing expression after the + operator
+
+var x = 10
+var y = 20 +
+print x

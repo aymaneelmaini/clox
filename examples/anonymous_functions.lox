@@ -1,0 +1,10 @@
+var numbers = 5;
+var double = fn(n) { n * 2 };
+
+println(double(numbers));
+
+var apply = fn(func, value) {
+  func(value)
+};
+
+println(apply(double, 10));

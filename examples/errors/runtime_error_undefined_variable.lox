@@ -1,0 +1,5 @@
+// This file demonstrates runtime error reporting
+// Undefined variable access
+
+var x = 10
+print x + undefinedVariable

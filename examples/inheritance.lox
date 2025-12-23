@@ -1,0 +1,27 @@
+class Animal {
+  init(name) {
+    this.name = name;
+  }
+  
+  speak() {
+    println(this.name + " makes a sound");
+  }
+}
+
+class Dog : Animal {
+  speak() {
+    println(this.name + " barks");
+  }
+}
+
+class Cat : Animal {
+  speak() {
+    println(this.name + " meows");
+  }
+}
+
+var dog = Dog("Rex");
+var cat = Cat("Whiskers");
+
+dog.speak();
+cat.speak();

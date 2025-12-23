@@ -1,0 +1,7 @@
+var age = input("How old are you? ");
+println("You are " + age + " years old");
+
+var answer = input("Enter yes or no: ");
+if (answer == "yes") {
+  println("You said yes!");
+}

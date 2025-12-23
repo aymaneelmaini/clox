@@ -1,0 +1,33 @@
+class Quiz {
+  static run() {
+    var score = 0;
+    
+    var answer1 = input("What is 2 + 2? ");
+    if (answer1 == "4") {
+      println("Correct!");
+      score = score + 1;
+    } else {
+      println("Wrong! The answer is 4");
+    }
+    
+    var answer2 = input("What is the capital of France? ");
+    if (answer2 == "Paris") {
+      println("Correct!");
+      score = score + 1;
+    } else {
+      println("Wrong! The answer is Paris");
+    }
+    
+    var answer3 = input("Is the Earth flat? ");
+    if (answer3 == "no") {
+      println("Correct!");
+      score = score + 1;
+    } else {
+      println("Wrong! The answer is no");
+    }
+    
+    println("Your score: " + score + "/3");
+  }
+}
+
+Quiz.run();

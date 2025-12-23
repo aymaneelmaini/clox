@@ -1,0 +1,22 @@
+class User {
+  init(name, email) {
+    this.name = name;
+    this.email = email;
+  }
+  
+  static create() {
+    var userName = input("Enter name: ");
+    var userEmail = input("Enter email: ");
+    return User(userName, userEmail);
+  }
+  
+  display() {
+    println("User: " + this.name + " (" + this.email + ")");
+  }
+}
+
+var user1 = User.create();
+user1.display();
+
+var user2 = User.create();
+user2.display();

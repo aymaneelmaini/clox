@@ -1,0 +1,7 @@
+// This file demonstrates runtime type error
+// Cannot add incompatible types in certain operations
+
+var x = "hello"
+var y = 10
+var z = x - y
+print z

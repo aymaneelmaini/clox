@@ -1,0 +1,21 @@
+var a = 10;
+var b = 20;
+
+println(a > b);
+println(a < b);
+println(a == b);
+println(a != b);
+
+var x = nil;
+if (!x) {
+  println("x is falsey");
+}
+
+var name = "Lox";
+if (name) {
+  println("name is truthy");
+}
+
+if (0) {
+  println("zero is truthy");
+}

@@ -1,0 +1,7 @@
+class Math {
+  static max() {
+    return "38";
+  }
+}
+
+println(Math.max());

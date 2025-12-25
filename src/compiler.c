@@ -63,6 +63,7 @@ typedef struct
 } Compiler;
 
 static bool immutable_globals[UINT8_MAX];
+
 Parser      parser;
 Compiler*   current;
 Chunk*      compiling_chunk;

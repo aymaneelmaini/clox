@@ -7,6 +7,8 @@
 static int simple_instruction(const char* name, int offset);
 static int constant_instruction(const char* name, Chunk* chunk, int offset);
 static int byte_instruction(const char* name, Chunk* chunk, int offset);
+static int jump_instruction(const char* name, int sign, Chunk* chunk,
+                            int offset);
 
 void disassemble_chunk(Chunk* chunk, const char* name)
 {
@@ -70,6 +72,10 @@ int disassemble_instruction(Chunk* chunk, int offset)
         return simple_instruction("OP_NEGATE", offset);
     case OP_PRINT:
         return simple_instruction("OP_PRINT", offset);
+    case OP_JUMP:
+        return jump_instruction("OP_JUMP", 1, chunk, offset);
+    case OP_JUMP_IF_FALSE:
+        return jump_instruction("OP_JUMP_IF_FALSE", 1, chunk, offset);
     case OP_RETURN:
         return simple_instruction("OP_RETURN", offset);
     default:
@@ -91,6 +97,15 @@ static int byte_instruction(const char* name, Chunk* chunk, int offset)
     return offset + 2;
 }
 
+static int jump_instruction(const char* name, int sign, Chunk* chunk,
+                            int offset)
+{
+    u16 jump = (u16)(chunk->code[offset + 1] << 8);
+    jump |= chunk->code[offset];
+    printf("%-16s %4d -> %d\n", name, offset, offset + 3 + sign * jump);
+    return offset + 3;
+}
+
 static int constant_instruction(const char* name, Chunk* chunk, int offset)
 {
     u8 constantIndex = chunk->code[offset + 1];
@@ -98,4 +113,111 @@ static int constant_instruction(const char* name, Chunk* chunk, int offset)
     print_value(chunk->constants.values[constantIndex]);
     printf("\n");
     return offset + 2;
+}
+
+static const char* token_type_to_string(TokenType type)
+{
+    switch (type)
+    {
+    case TOKEN_LEFT_PAREN:
+        return "LEFT_PAREN";
+    case TOKEN_RIGHT_PAREN:
+        return "RIGHT_PAREN";
+    case TOKEN_LEFT_BRACE:
+        return "LEFT_BRACE";
+    case TOKEN_RIGHT_BRACE:
+        return "RIGHT_BRACE";
+    case TOKEN_COMMA:
+        return "COMMA";
+    case TOKEN_DOT:
+        return "DOT";
+    case TOKEN_MINUS:
+        return "MINUS";
+    case TOKEN_PLUS:
+        return "PLUS";
+    case TOKEN_SEMICOLON:
+        return "SEMICOLON";
+    case TOKEN_SLASH:
+        return "SLASH";
+    case TOKEN_STAR:
+        return "STAR";
+
+    case TOKEN_BANG:
+        return "BANG";
+    case TOKEN_BANG_EQUAL:
+        return "BANG_EQUAL";
+    case TOKEN_EQUAL:
+        return "EQUAL";
+    case TOKEN_EQUAL_EQUAL:
+        return "EQUAL_EQUAL";
+    case TOKEN_GREATER:
+        return "GREATER";
+    case TOKEN_GREATER_EQUAL:
+        return "GREATER_EQUAL";
+    case TOKEN_LESS:
+        return "LESS";
+    case TOKEN_LESS_EQUAL:
+        return "LESS_EQUAL";
+
+    case TOKEN_IDENTIFIER:
+        return "IDENTIFIER";
+    case TOKEN_STRING:
+        return "STRING";
+    case TOKEN_NUMBER:
+        return "NUMBER";
+
+    case TOKEN_AND:
+        return "AND";
+    case TOKEN_CLASS:
+        return "CLASS";
+    case TOKEN_ELSE:
+        return "ELSE";
+    case TOKEN_FALSE:
+        return "FALSE";
+    case TOKEN_FOR:
+        return "FOR";
+    case TOKEN_FUN:
+        return "FUN";
+    case TOKEN_IF:
+        return "IF";
+    case TOKEN_NIL:
+        return "NIL";
+    case TOKEN_OR:
+        return "OR";
+    case TOKEN_PRINT:
+        return "PRINT";
+    case TOKEN_RETURN:
+        return "RETURN";
+    case TOKEN_SUPER:
+        return "SUPER";
+    case TOKEN_THIS:
+        return "THIS";
+    case TOKEN_TRUE:
+        return "TRUE";
+    case TOKEN_VAR:
+        return "VAR";
+    case TOKEN_VAL:
+        return "VAL";
+    case TOKEN_WHILE:
+        return "WHILE";
+
+    case TOKEN_ERROR:
+        return "ERROR";
+    case TOKEN_EOF:
+        return "EOF";
+    }
+
+    return "UNKNOWN";
+}
+
+void print_token(Token token)
+{
+    printf("%-15s line %-4d '", token_type_to_string(token.type), token.line);
+
+    for (int i = 0; i < token.length; i++)
+    {
+        putchar(token.start[i]);
+    }
+
+    printf("'\n");
 }

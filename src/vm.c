@@ -29,12 +29,20 @@ static void runtime_error(const char* format, ...)
     va_end(args);
     fputs("\n", stderr);
 
-    CallFrame* frame = &vm.frames[vm.frame_count - 1];
-    size_t     instruction = frame->ip - frame->function->chunk.code - 1;
-    int        line = frame->function->chunk.lines[instruction];
-    fprintf(stderr, "[Line %d] in script\n", line);
+    for (int i = vm.frame_count - 1; i >= 0; i--)
+    {
+        CallFrame*   frame = &vm.frames[i];
+        ObjFunction* function = frame->function;
+        size_t       instruction = frame->ip - function->chunk.code - 1;
 
-    reset_stack();
+        fprintf(stderr, "[line %d] in ", function->chunk.lines[instruction]);
+        if (function->name == NULL)
+            fprintf(stderr, "script\n");
+        else
+
+            fprintf(stderr, "%s()\n", function->name->chars);
+        reset_stack();
+    }
 }
 
 void init_VM()
@@ -79,7 +87,7 @@ static bool call(ObjFunction* function, int arg_count)
     if (vm.frame_count == FRAMES_MAX)
     {
         // as Java developer i hate this exception,
-        // but sorry there no way to increase stack size here like jvm does :Joy
+        // but sorry there no way to increase stack size here like jvm does
         runtime_error("Stack Overflow");
         return false;
     }
@@ -92,22 +100,22 @@ static bool call(ObjFunction* function, int arg_count)
 
 static bool call_value(Value callee, int arg_count)
 {
-    if (!IS_OBJ(callee))
+    if (IS_OBJ(callee))
     {
-        runtime_error("Can only call functions and classes");
-        return false;
+        switch (OBJ_TYPE(callee))
+        {
+        case OBJ_FUNCTION:
+        {
+            return call(AS_FUNCTION(callee), arg_count);
+        }
+        default:
+            // No callable shit
+            break;
+        }
     }
 
-    switch (OBJ_TYPE(callee))
-    {
-    case OBJ_FUNCTION:
-    {
-        return call(AS_FUNCTION(callee), arg_count);
-    }
-    default:
-        // No callable shit
-        break;
-    }
+    runtime_error("Can only call functions and classes");
+    return false;
 }
 
 static bool is_falsey(Value value)

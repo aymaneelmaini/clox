@@ -55,6 +55,12 @@ typedef struct
     bool  is_immutable;
 } Local;
 
+typedef struct
+{
+    u8   index;
+    bool islocal;
+} Upvalue;
+
 typedef enum
 {
     TYPE_FUNCTION,
@@ -67,9 +73,10 @@ typedef struct Compiler
     ObjFunction*     function;
     FunctionType     type;
 
-    Local locals[UINT8_COUNT];
-    int   local_count;
-    int   scope_depth;
+    Local   locals[UINT8_COUNT];
+    int     local_count;
+    Upvalue upvalues[UINT8_COUNT];
+    int     scope_depth;
 } Compiler;
 
 static bool immutable_globals[UINT8_MAX];
@@ -303,6 +310,43 @@ static int resolve_local(Compiler* compiler, Token* name)
     return -1;
 }
 
+static int add_upvalue(Compiler* compiler, u8 index, bool islocal)
+{
+    int upvalue_count = compiler->function->upvalue_count;
+    for (int i = 0; i < upvalue_count; i++)
+    {
+        Upvalue* upvalue = &compiler->upvalues[i];
+        if (upvalue->index == index && upvalue->islocal == islocal)
+            return i;
+    }
+
+    if (upvalue_count == UINT8_COUNT)
+    {
+        error("Too many closure variables in function");
+        return 0;
+    }
+
+    compiler->upvalues[upvalue_count].islocal = islocal;
+    compiler->upvalues[upvalue_count].index = index;
+    return compiler->function->upvalue_count++;
+}
+
+static int resolve_upvalue(Compiler* compiler, Token* name)
+{
+    if (compiler->enclosing == NULL)
+        return -1;
+
+    int local = resolve_local(compiler->enclosing, name);
+    if (local != -1)
+        return add_upvalue(compiler, (u8)local, true);
+
+    int upvalue = resolve_upvalue(compiler->enclosing, name);
+    if (upvalue != -1)
+        return add_upvalue(compiler, (u8)upvalue, false);
+
+    return -1;
+}
+
 static void add_local(Token name, bool is_immutable)
 {
     if (current->local_count == UINT8_COUNT)
@@ -503,6 +547,11 @@ static void named_variable(Token name, bool can_assign)
         get_op = OP_GET_LOCAL;
         set_op = OP_SET_LOCAL;
     }
+    else if ((arg = resolve_upvalue(current, &name)) != -1)
+    {
+        get_op = OP_GET_UPVALUE;
+        set_op = OP_SET_UPVALUE;
+    }
     else
     {
         arg = identifier_constant(&name);
@@ -680,6 +729,12 @@ static void function(FunctionType type)
 
     ObjFunction* function = end_compiler();
     emit_bytes(OP_CLOSURE, make_constant(OBJ_VAL(function)));
+
+    for (int i = 0; i < function->upvalue_count; i++)
+    {
+        emit_byte(compiler.upvalues[i].islocal ? 1 : 1);
+        emit_byte(compiler.upvalues[i].index);
+    }
 }
 
 static void fun_declaration()

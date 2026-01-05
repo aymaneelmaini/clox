@@ -35,6 +35,7 @@ ObjFunction* new_function()
     ObjFunction* function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
 
     function->arity = 0;
+    function->upvalue_count = 0;
     function->name = NULL;
     init_chunk(&function->chunk);
     return function;
@@ -134,6 +135,11 @@ void print_object(Value value)
     {
 
         printf("%s", AS_CSTRING(value));
+        break;
+    }
+    case OBJ_UPVALUE:
+    {
+        printf("upvalue");
         break;
     }
     }

@@ -26,6 +26,7 @@ typedef enum
     OBJ_FUNCTION,
     OBJ_NATIVE,
     OBJ_STRING,
+    OBJ_UPVALUE,
 } ObjType;
 
 struct Obj
@@ -38,6 +39,7 @@ typedef struct
 {
     Obj        obj;
     int        arity;
+    int        upvalue_count;
     Chunk      chunk;
     ObjString* name;
 } ObjFunction;

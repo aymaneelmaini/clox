@@ -52,6 +52,7 @@ typedef struct
 {
     Token name;
     int   depth;
+    bool  is_captured;
     bool  is_immutable;
 } Local;
 
@@ -237,6 +238,8 @@ static void init_compiler(Compiler* compiler, FunctionType type)
 
     Local* local = &current->locals[current->local_count++];
     local->depth = 0;
+    local->is_captured = false;
+    local->is_immutable = false;
     local->name.start = "";
     local->name.length = 0;
 }
@@ -270,7 +273,10 @@ static void end_scope()
            current->locals[current->local_count - 1].depth >
                current->scope_depth)
     {
-        emit_byte(OP_POP);
+        if (current->locals[current->local_count - 1].is_captured)
+            emit_byte(OP_CLOSE_UPVALUE);
+        else
+            emit_byte(OP_POP);
         current->local_count--;
     }
 }
@@ -338,7 +344,10 @@ static int resolve_upvalue(Compiler* compiler, Token* name)
 
     int local = resolve_local(compiler->enclosing, name);
     if (local != -1)
+    {
+        compiler->enclosing->locals[local].is_captured = true;
         return add_upvalue(compiler, (u8)local, true);
+    }
 
     int upvalue = resolve_upvalue(compiler->enclosing, name);
     if (upvalue != -1)
@@ -356,8 +365,9 @@ static void add_local(Token name, bool is_immutable)
     }
     Local* local = &current->locals[current->local_count++];
     local->name = name;
-    local->is_immutable = is_immutable;
     local->depth = -1;
+    local->is_captured = false;
+    local->is_immutable = is_immutable;
 }
 
 static void declare_variable(bool is_immutable)

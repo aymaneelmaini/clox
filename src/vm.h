@@ -25,7 +25,8 @@ typedef struct
     Value*    stack_top;
     Table     globals;
     Table     strings;  // for string interning just like (string pool in java)
-    Obj*      objects;
+    ObjUpvalue* open_upvalues;
+    Obj*        objects;
 } VM;
 
 typedef enum

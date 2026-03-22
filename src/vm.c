@@ -63,6 +63,13 @@ void init_VM()
     init_table(&vm.globals);
     init_table(&vm.strings);
 
+    vm.bytes_allocated = 0;
+    vm.next_GC = 1024 * 1024;
+
+    vm.gray_capacity = 0;
+    vm.gray_count = 0;
+    vm.gray_stack = NULL;
+
     define_native("clock", clock_native);
 }
 
@@ -199,20 +206,20 @@ static InterpretResult run()
 
 #define READ_BYTE() (*frame->ip++)
 #define READ_SHORT() (frame->ip += 2, (u16)(frame->ip[-2] << 8) | frame->ip[-1])
-#define READ_CONSTANT()                                                        \
+#define READ_CONSTANT() \
     (frame->closure->function->chunk.constants.values[READ_BYTE()])
 #define READ_STRING() AS_STRING(READ_CONSTANT())
-#define BINARY_OP(value_type, op)                                              \
-    do                                                                         \
-    {                                                                          \
-        if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))                        \
-        {                                                                      \
-            runtime_error("Operands must be numbers ");                        \
-            return INTERPRET_RUNTIME_ERROR;                                    \
-        }                                                                      \
-        double b = AS_NUMBER(pop());                                           \
-        double a = AS_NUMBER(pop());                                           \
-        push(value_type(a op b));                                              \
+#define BINARY_OP(value_type, op)                       \
+    do                                                  \
+    {                                                   \
+        if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) \
+        {                                               \
+            runtime_error("Operands must be numbers "); \
+            return INTERPRET_RUNTIME_ERROR;             \
+        }                                               \
+        double b = AS_NUMBER(pop());                    \
+        double a = AS_NUMBER(pop());                    \
+        push(value_type(a op b));                       \
     } while (false)
 
     for (;;)

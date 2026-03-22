@@ -19,14 +19,19 @@ typedef struct
 
 typedef struct
 {
-    CallFrame frames[FRAMES_MAX];
-    int       frame_count;
-    Value     stack[STACK_MAX];
-    Value*    stack_top;
-    Table     globals;
-    Table     strings;  // for string interning just like (string pool in java)
+    CallFrame   frames[FRAMES_MAX];
+    int         frame_count;
+    Value       stack[STACK_MAX];
+    Value*      stack_top;
+    Table       globals;
+    Table       strings;  // for string interning just like (string pool in java)
     ObjUpvalue* open_upvalues;
+    size_t      bytes_allocated;
+    size_t      next_GC;
     Obj*        objects;
+    int         gray_capacity;
+    int         gray_count;
+    Obj**       gray_stack;
 } VM;
 
 typedef enum

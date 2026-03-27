@@ -748,6 +748,19 @@ static void function(FunctionType type)
     }
 }
 
+static void class_declaration()
+{
+    consume(TOKEN_IDENTIFIER, "Expect class name.");
+    u8 name_constant = identifier_constant(&parser.previous);
+    declare_variable(true);
+
+    emit_bytes(OP_CLASS, name_constant);
+    define_variable(name_constant, true);
+
+    consume(TOKEN_LEFT_BRACE, "Expected '{' after class name");
+    consume(TOKEN_RIGHT_BRACE, "Expected '}' after class body");
+}
+
 static void fun_declaration()
 {
     u8 global = parse_variable(false, "Expect function name");
@@ -930,10 +943,10 @@ static void synchronize()
 
 static void declaration()
 {
-    if (match(TOKEN_FUN))
-    {
+    if (match(TOKEN_CLASS))
+        class_declaration();
+    else if (match(TOKEN_FUN))
         fun_declaration();
-    }
     else if (match(TOKEN_VAR) || match(TOKEN_VAL))
         var_declaration();
     else

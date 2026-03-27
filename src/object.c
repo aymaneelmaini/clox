@@ -8,9 +8,10 @@
 #include "memory.h"
 #include "object.h"
 #include "table.h"
+#include "value.h"
 #include "vm.h"
 
-#define ALLOCATE_OBJ(type, object_type)                                        \
+#define ALLOCATE_OBJ(type, object_type) \
     (type*)allocate_object(sizeof(type), object_type)
 
 static Obj* allocate_object(size_t size, ObjType type)
@@ -26,6 +27,13 @@ static Obj* allocate_object(size_t size, ObjType type)
 #endif
 
     return object;
+}
+
+ObjClass* new_class(ObjString* name)
+{
+    ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
+    klass->name = name;
+    return klass;
 }
 
 ObjClosure* new_closure(ObjFunction* function)
@@ -54,6 +62,14 @@ ObjFunction* new_function()
     return function;
 }
 
+ObjInstance* new_instance(ObjClass* klass)
+{
+    ObjInstance* instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
+    instance->klass = klass;
+    init_table(&instance->fields);
+    return instance;
+}
+
 ObjNative* new_native(NativeFn function)
 {
     ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
@@ -68,7 +84,9 @@ static ObjString* allocate_string(char* chars, int length, u32 hash)
     string->chars = chars;
     string->hash = hash;
 
+    push(OBJ_VAL(string));
     table_set(&vm.strings, string, NIL_VAL);
+    pop();
 
     return string;
 }
@@ -138,6 +156,9 @@ void print_object(Value value)
 
     switch (OBJ_TYPE(value))
     {
+    case OBJ_CLASS:
+        printf("%s", AS_CLASS(value)->name->chars);
+        break;
     case OBJ_CLOSURE:
     {
         print_function(AS_CLOSURE(value)->function);
@@ -148,6 +169,9 @@ void print_object(Value value)
         print_function(AS_FUNCTION(value));
         break;
     }
+    case OBJ_INSTANCE:
+        printf("%s instance", AS_INSTANCE(value)->klass->name->chars);
+        break;
     case OBJ_NATIVE:
     {
         printf("<native fn>");

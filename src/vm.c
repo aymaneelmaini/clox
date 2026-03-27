@@ -124,6 +124,10 @@ static bool call_value(Value callee, int arg_count)
     {
         switch (OBJ_TYPE(callee))
         {
+        case OBJ_INSTANCE:
+            ObjClass* klass = AS_CLASS(callee);
+            vm.stack_top[-arg_count - 1] = OBJ_VAL(new_instance(klass));
+            return true;
         case OBJ_CLOSURE:
             return call(AS_CLOSURE(callee), arg_count);
         case OBJ_NATIVE:
@@ -187,8 +191,8 @@ static bool is_falsey(Value value)
 
 static void concatenate()
 {
-    ObjString* b = AS_STRING(pop());
-    ObjString* a = AS_STRING(pop());
+    ObjString* b = AS_STRING(peek(0));
+    ObjString* a = AS_STRING(peek(1));
 
     int   length = a->length + b->length;
     char* chars = ALLOCATE(char, length + 1);
@@ -197,6 +201,9 @@ static void concatenate()
     chars[length] = '\0';
 
     ObjString* result = take_string(chars, length);
+
+    pop();
+    pop();
     push(OBJ_VAL(result));
 }
 
@@ -438,6 +445,9 @@ static InterpretResult run()
             frame = &vm.frames[vm.frame_count - 1];
             break;
         }
+        case OP_CLASS:
+            push(OBJ_VAL(new_class(READ_STRING())));
+            break;
         }
     }
 

@@ -764,17 +764,34 @@ static void function(FunctionType type)
     }
 }
 
+static void method()
+{
+    consume(TOKEN_IDENTIFIER, "Expect method name.");
+    u8 constant = identifier_constant(&parser.previous);
+
+    FunctionType type = TYPE_FUNCTION;
+    function(type);
+
+    emit_bytes(OP_METHOD, constant);
+}
 static void class_declaration()
 {
     consume(TOKEN_IDENTIFIER, "Expect class name.");
-    u8 name_constant = identifier_constant(&parser.previous);
+    Token class_name = parser.previous;
+    u8    name_constant = identifier_constant(&parser.previous);
     declare_variable(true);
 
     emit_bytes(OP_CLASS, name_constant);
     define_variable(name_constant, true);
 
+    named_variable(class_name, false);
     consume(TOKEN_LEFT_BRACE, "Expected '{' after class name");
+    while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
+    {
+        method();
+    }
     consume(TOKEN_RIGHT_BRACE, "Expected '}' after class body");
+    emit_byte(OP_POP);
 }
 
 static void fun_declaration()

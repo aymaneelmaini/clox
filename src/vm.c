@@ -159,6 +159,14 @@ static void close_upvalues(Value* last)
     }
 }
 
+static void define_method(ObjString* name)
+{
+    Value     method = peek(0);
+    ObjClass* klass = AS_CLASS(peek(1));
+    table_set(&klass->methods, name, method);
+    pop();
+}
+
 static ObjUpvalue* capture_upvalue(Value* local)
 {
     ObjUpvalue* prev_upvalue = NULL;
@@ -483,6 +491,9 @@ static InterpretResult run()
         }
         case OP_CLASS:
             push(OBJ_VAL(new_class(READ_STRING())));
+            break;
+        case OP_METHOD:
+            define_method(READ_STRING());
             break;
         }
     }

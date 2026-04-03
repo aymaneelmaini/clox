@@ -8,6 +8,9 @@
 
 #define OBJ_TYPE(value) (AS_OBJ(value)->type)
 
+#define IS_BOUND_METHOD(value) is_obj_type(value, OBJ_BOUND_METHOD)
+#define AS_BOUND_METHOD(value) ((ObjBoundMethod*)AS_OBJ(value))
+
 #define IS_CLASS(value) is_obj_type(value, OBJ_CLASS)
 #define AS_CLASS(value) ((ObjClass*)AS_OBJ(value))
 
@@ -29,6 +32,7 @@
 
 typedef enum
 {
+    OBJ_BOUND_METHOD,
     OBJ_CLASS,
     OBJ_CLOSURE,
     OBJ_FUNCTION,
@@ -87,29 +91,37 @@ typedef struct
     int          upvalue_count;
 } ObjClosure;
 
-typedef struct ObjClass
+typedef struct
 {
     Obj        obj;
     ObjString* name;
     Table      methods;
 } ObjClass;
 
-typedef struct ObjInstance
+typedef struct
 {
     Obj       obj;
     ObjClass* klass;
     Table     fields;
 } ObjInstance;
 
-ObjClass*    new_class(ObjString* name);
-ObjClosure*  new_closure(ObjFunction* function);
-ObjFunction* new_function();
-ObjInstance* new_instance(ObjClass* klass);
-ObjNative*   new_native(NativeFn function);
-ObjString*   take_string(char* chars, int length);
-ObjString*   copy_string(const char* chars, int length);
-ObjUpvalue*  new_upvalue(Value* slot);
-void         print_object(Value value);
+typedef struct
+{
+    Obj         obj;
+    Value       receiver;
+    ObjClosure* method;
+} ObjBoundMethod;
+
+ObjBoundMethod* new_bound_method(Value receiver, ObjClosure* method);
+ObjClass*       new_class(ObjString* name);
+ObjClosure*     new_closure(ObjFunction* function);
+ObjFunction*    new_function();
+ObjInstance*    new_instance(ObjClass* klass);
+ObjNative*      new_native(NativeFn function);
+ObjString*      take_string(char* chars, int length);
+ObjString*      copy_string(const char* chars, int length);
+ObjUpvalue*     new_upvalue(Value* slot);
+void            print_object(Value value);
 
 static inline bool is_obj_type(Value value, ObjType type)
 {

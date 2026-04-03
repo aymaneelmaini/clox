@@ -66,6 +66,7 @@ typedef struct
 typedef enum
 {
     TYPE_FUNCTION,
+    TYPE_METHOD,
     TYPE_SCRIPT,
 } FunctionType;
 
@@ -81,10 +82,17 @@ typedef struct Compiler
     int     scope_depth;
 } Compiler;
 
+typedef struct ClassCompiler
+{
+    struct ClassCompiler* enclosing;
+    Token                 name;
+} ClassCompiler;
+
 static bool immutable_globals[UINT8_MAX];
 
-Parser    parser;
-Compiler* current = NULL;
+Parser         parser;
+Compiler*      current = NULL;
+ClassCompiler* current_class = NULL;
 
 static Chunk* current_chunk()
 {
@@ -241,8 +249,16 @@ static void init_compiler(Compiler* compiler, FunctionType type)
     local->depth = 0;
     local->is_captured = false;
     local->is_immutable = false;
-    local->name.start = "";
-    local->name.length = 0;
+    if (type != TYPE_FUNCTION)
+    {
+        local->name.start = "this";
+        local->name.length = 4;
+    }
+    else
+    {
+        local->name.start = "";
+        local->name.length = 0;
+    }
 }
 
 static ObjFunction* end_compiler()
@@ -617,6 +633,16 @@ static void variable(bool can_assign)
     named_variable(parser.previous, can_assign);
 }
 
+static void this_(bool can_assign)
+{
+    if (current_class == NULL)
+    {
+        error("Can't use 'this' outside of a class");
+        return;
+    }
+    variable(false);
+}
+
 static void unary(bool can_assign)
 {
     TokenType operator_type = parser.previous.type;
@@ -642,7 +668,7 @@ ParseRule rules[] = {
     [TOKEN_LEFT_BRACE]     =  { NULL,      NULL,    PREC_NONE        },
     [TOKEN_RIGHT_BRACE]    =  { NULL,      NULL,    PREC_NONE        },
     [TOKEN_COMMA]          =  { NULL,      NULL,    PREC_NONE        },
-    [TOKEN_DOT]            =  { NULL,      dot,    PREC_NONE        },
+    [TOKEN_DOT]            =  { NULL,      dot,    PREC_NONE         },
     [TOKEN_MINUS]          =  { unary,     binary,  PREC_TERM        },
     [TOKEN_PLUS]           =  { NULL,      binary,  PREC_TERM        },
     [TOKEN_SEMICOLON]      =  { NULL,      NULL,    PREC_NONE        },
@@ -659,7 +685,7 @@ ParseRule rules[] = {
     [TOKEN_STRING]         =  { string,    NULL,    PREC_NONE        },
     [TOKEN_NUMBER]         =  { number,    NULL,    PREC_NONE        },
     [TOKEN_IDENTIFIER]     =  { variable,  NULL,    PREC_NONE        },
-    [TOKEN_AND]            =  { NULL,      and_,    PREC_AND        },
+    [TOKEN_AND]            =  { NULL,      and_,    PREC_AND         },
     [TOKEN_CLASS]          =  { NULL,      NULL,    PREC_NONE        },
     [TOKEN_ELSE]           =  { NULL,      NULL,    PREC_NONE        },
     [TOKEN_FALSE]          =  { literal,   NULL,    PREC_NONE        },
@@ -667,11 +693,11 @@ ParseRule rules[] = {
     [TOKEN_FUN]            =  { NULL,      NULL,    PREC_NONE        },
     [TOKEN_IF]             =  { NULL,      NULL,    PREC_NONE        },
     [TOKEN_NIL]            =  { literal,   NULL,    PREC_NONE        },
-    [TOKEN_OR]             =  { NULL,      or_,     PREC_OR        },
+    [TOKEN_OR]             =  { NULL,      or_,     PREC_OR          },
     [TOKEN_PRINT]          =  { NULL,      NULL,    PREC_NONE        },
     [TOKEN_RETURN]         =  { NULL,      NULL,    PREC_NONE        },
     [TOKEN_SUPER]          =  { NULL,      NULL,    PREC_NONE        },
-    [TOKEN_THIS]           =  { NULL,      NULL,    PREC_NONE        },
+    [TOKEN_THIS]           =  { this_,      NULL,   PREC_NONE        },
     [TOKEN_TRUE]           =  { literal,   NULL,    PREC_NONE        },
     [TOKEN_VAR]            =  { NULL,      NULL,    PREC_NONE        },
     [TOKEN_WHILE]          =  { NULL,      NULL,    PREC_NONE        },
@@ -769,7 +795,7 @@ static void method()
     consume(TOKEN_IDENTIFIER, "Expect method name.");
     u8 constant = identifier_constant(&parser.previous);
 
-    FunctionType type = TYPE_FUNCTION;
+    FunctionType type = TYPE_METHOD;
     function(type);
 
     emit_bytes(OP_METHOD, constant);
@@ -784,6 +810,9 @@ static void class_declaration()
     emit_bytes(OP_CLASS, name_constant);
     define_variable(name_constant, true);
 
+    ClassCompiler class_compiler = {.name = parser.previous, .enclosing = current_class};
+    current_class = &class_compiler;
+
     named_variable(class_name, false);
     consume(TOKEN_LEFT_BRACE, "Expected '{' after class name");
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
@@ -792,6 +821,8 @@ static void class_declaration()
     }
     consume(TOKEN_RIGHT_BRACE, "Expected '}' after class body");
     emit_byte(OP_POP);
+
+    current_class = current_class->enclosing;
 }
 
 static void fun_declaration()

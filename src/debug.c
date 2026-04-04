@@ -7,6 +7,7 @@
 
 static int simple_instruction(const char* name, int offset);
 static int constant_instruction(const char* name, Chunk* chunk, int offset);
+static int invoke_instruction(const char* name, Chunk* chunk, int offset);
 static int byte_instruction(const char* name, Chunk* chunk, int offset);
 static int jump_instruction(const char* name, int sign, Chunk* chunk,
                             int offset);
@@ -89,6 +90,8 @@ int disassemble_instruction(Chunk* chunk, int offset)
         return jump_instruction("OP_JUMP_IF_FALSE", -1, chunk, offset);
     case OP_CALL:
         return byte_instruction("OP_CALL", chunk, offset);
+    case OP_INVOKE:
+        return invoke_instruction("OP_INVOKE", chunk, offset);
     case OP_CLOSURE:
     {
         u8 constant = chunk->code[++offset];
@@ -150,6 +153,17 @@ static int constant_instruction(const char* name, Chunk* chunk, int offset)
     print_value(chunk->constants.values[constantIndex]);
     printf("\n");
     return offset + 2;
+}
+
+static int invoke_instruction(const char* name, Chunk* chunk, int offset)
+{
+    u8 constant = chunk->code[offset + 1];
+    u8 arg_count = chunk->code[offset + 2];
+
+    printf("%-16s (%d args) %4d '", name, arg_count, constant);
+    print_value(chunk->constants.values[constant]);
+    printf("\n");
+    return offset + 3;
 }
 
 static const char* token_type_to_string(TokenType type)

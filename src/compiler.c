@@ -66,6 +66,7 @@ typedef struct
 typedef enum
 {
     TYPE_FUNCTION,
+    TYPE_INITIALIZER,
     TYPE_METHOD,
     TYPE_SCRIPT,
 } FunctionType;
@@ -201,7 +202,11 @@ static int emit_jump(u8 instruction)
 
 static void emit_return()
 {
-    emit_byte(OP_NIL);
+    if (current->type == TYPE_INITIALIZER)
+        emit_bytes(OP_GET_LOCAL, 0);
+    else
+        emit_byte(OP_NIL);
+
     emit_byte(OP_RETURN);
 }
 
@@ -525,6 +530,12 @@ static void dot(bool can_assign)
         expression();
         emit_bytes(OP_SET_PROPERTY, name);
     }
+    else if (match(TOKEN_LEFT_PAREN))
+    {
+        u8 arg_count = arguments_list();
+        emit_bytes(OP_INVOKE, name);
+        emit_byte(arg_count);
+    }
     else
     {
         emit_bytes(OP_GET_PROPERTY, name);
@@ -796,6 +807,9 @@ static void method()
     u8 constant = identifier_constant(&parser.previous);
 
     FunctionType type = TYPE_METHOD;
+    if (parser.previous.length == 4 && memcmp(parser.previous.start, "init", 4) == 0)
+        type = TYPE_INITIALIZER;
+
     function(type);
 
     emit_bytes(OP_METHOD, constant);
@@ -953,6 +967,9 @@ static void return_statement()
     }
     else
     {
+        if (current->type == TYPE_INITIALIZER)
+            error("Can't return an a value from an initializer");
+
         expression();
         consume(TOKEN_SEMICOLON, "Expect semicolon after return value;");
         emit_byte(OP_RETURN);

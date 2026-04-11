@@ -116,6 +116,8 @@ int disassemble_instruction(Chunk* chunk, int offset)
         return simple_instruction("OP_RETURN", offset);
     case OP_CLASS:
         return constant_instruction("OP_CLASS", chunk, offset);
+    case OP_INHERIT:
+        return simple_instruction("OP_INHERIT", offset);
     case OP_METHOD:
         return constant_instruction("OP_METHOD", chunk, offset);
     default:
@@ -188,6 +190,8 @@ static const char* token_type_to_string(TokenType type)
         return "PLUS";
     case TOKEN_SEMICOLON:
         return "SEMICOLON";
+    case TOKEN_COLON:
+        return "COLON";
     case TOKEN_SLASH:
         return "SLASH";
     case TOKEN_STAR:

@@ -87,6 +87,7 @@ typedef struct ClassCompiler
 {
     struct ClassCompiler* enclosing;
     Token                 name;
+    bool                  has_super_class;
 } ClassCompiler;
 
 static bool immutable_globals[UINT8_MAX];
@@ -644,6 +645,28 @@ static void variable(bool can_assign)
     named_variable(parser.previous, can_assign);
 }
 
+static Token synthetic_token(const char* text)
+{
+    return (Token){.start = text,
+                   .length = (int)strlen(text)};
+}
+
+static void super_(bool can_assign)
+{
+    if (current_class == NULL)
+        error("Can't use 'super' outside of a class");
+    else if (!current_class->has_super_class)
+        error("Can't use 'super' in a class with no superclass");
+
+    consume(TOKEN_DOT, "Expect '.' after a super.");
+    consume(TOKEN_IDENTIFIER, "Expect super class method name.");
+    u8 name = identifier_constant(&parser.previous);
+
+    named_variable(synthetic_token("this"), false);
+    named_variable(synthetic_token("super"), false);
+    emit_bytes(OP_GET_SUPER, name);
+}
+
 static void this_(bool can_assign)
 {
     if (current_class == NULL)
@@ -707,8 +730,8 @@ ParseRule rules[] = {
     [TOKEN_OR]             =  { NULL,      or_,     PREC_OR          },
     [TOKEN_PRINT]          =  { NULL,      NULL,    PREC_NONE        },
     [TOKEN_RETURN]         =  { NULL,      NULL,    PREC_NONE        },
-    [TOKEN_SUPER]          =  { NULL,      NULL,    PREC_NONE        },
-    [TOKEN_THIS]           =  { this_,      NULL,   PREC_NONE        },
+    [TOKEN_SUPER]          =  { super_,     NULL,    PREC_NONE        },
+    [TOKEN_THIS]           =  { this_,     NULL,    PREC_NONE        },
     [TOKEN_TRUE]           =  { literal,   NULL,    PREC_NONE        },
     [TOKEN_VAR]            =  { NULL,      NULL,    PREC_NONE        },
     [TOKEN_WHILE]          =  { NULL,      NULL,    PREC_NONE        },
@@ -824,8 +847,27 @@ static void class_declaration()
     emit_bytes(OP_CLASS, name_constant);
     define_variable(name_constant, true);
 
-    ClassCompiler class_compiler = {.name = parser.previous, .enclosing = current_class};
+    ClassCompiler class_compiler = {.name = parser.previous,
+                                    .has_super_class = false,
+                                    .enclosing = current_class};
     current_class = &class_compiler;
+
+    if (match(TOKEN_COLON))
+    {
+        consume(TOKEN_IDENTIFIER, "Expect super class name.");
+        variable(false);
+
+        if (identifiers_equal(&class_name, &parser.previous))
+            error("A class can't inherit from itself");
+
+        begin_scope();
+        add_local(synthetic_token("super"), false);
+        define_variable(0, false);
+
+        named_variable(class_name, false);
+        emit_byte(OP_INHERIT);
+        class_compiler.has_super_class = true;
+    }
 
     named_variable(class_name, false);
     consume(TOKEN_LEFT_BRACE, "Expected '{' after class name");
@@ -835,6 +877,9 @@ static void class_declaration()
     }
     consume(TOKEN_RIGHT_BRACE, "Expected '}' after class body");
     emit_byte(OP_POP);
+
+    if (class_compiler.has_super_class)
+        end_scope();
 
     current_class = current_class->enclosing;
 }

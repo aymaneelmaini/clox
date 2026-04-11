@@ -62,6 +62,8 @@ int disassemble_instruction(Chunk* chunk, int offset)
         return constant_instruction("OP_GET_PROPERTY", chunk, offset);
     case OP_SET_PROPERTY:
         return constant_instruction("OP_SET_PROPERTY", chunk, offset);
+    case OP_GET_SUPER:
+        return constant_instruction("OP_GET_SUPER", chunk, offset);
     case OP_EQUAL:
         return simple_instruction("OP_EQUAL", offset);
     case OP_GREATER:
@@ -92,6 +94,8 @@ int disassemble_instruction(Chunk* chunk, int offset)
         return byte_instruction("OP_CALL", chunk, offset);
     case OP_INVOKE:
         return invoke_instruction("OP_INVOKE", chunk, offset);
+    case OP_SUPER_INVOKE:
+        return invoke_instruction("OP_SUPER_INVOKE", chunk, offset);
     case OP_CLOSURE:
     {
         u8 constant = chunk->code[++offset];

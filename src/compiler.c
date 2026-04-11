@@ -663,8 +663,18 @@ static void super_(bool can_assign)
     u8 name = identifier_constant(&parser.previous);
 
     named_variable(synthetic_token("this"), false);
-    named_variable(synthetic_token("super"), false);
-    emit_bytes(OP_GET_SUPER, name);
+    if (match(TOKEN_LEFT_PAREN))
+    {
+        u8 arg_count = arguments_list();
+        named_variable(synthetic_token("super"), false);
+        emit_bytes(OP_SUPER_INVOKE, name);
+        emit_byte(arg_count);
+    }
+    else
+    {
+        named_variable(synthetic_token("super"), false);
+        emit_bytes(OP_GET_SUPER, name);
+    }
 }
 
 static void this_(bool can_assign)

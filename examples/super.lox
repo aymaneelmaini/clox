@@ -4,7 +4,7 @@ class Vehicle {
   }
   
   info() {
-    println("Brand: " + this.brand);
+    println("Brand:", this.brand);
   }
 }
 
@@ -16,7 +16,7 @@ class Car : Vehicle {
   
   info() {
     super.info();
-    println("Model: " + this.model);
+    println("Model:", this.model);
   }
 }
 

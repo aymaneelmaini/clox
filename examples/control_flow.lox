@@ -7,6 +7,6 @@ if (x < y) {
 
 var counter = 0;
 while (counter < 5) {
-  println("Counter: " + counter);
+  println("Counter:", counter);
   counter = counter + 1;
 }

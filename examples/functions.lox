@@ -6,10 +6,11 @@ println(add(5, 3));
 
 fun makeCounter() {
   var count = 0;
-  return fn(step) {
+  fun increment(step) {
     count = count + step;
     return count;
-  };
+  }
+  return increment;
 }
 
 var counter = makeCounter();

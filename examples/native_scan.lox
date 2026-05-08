@@ -1,3 +1,2 @@
 var name = scan();
-println("You entered: " + name);
-
+println("You entered:", name);

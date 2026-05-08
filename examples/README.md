@@ -1,6 +1,6 @@
-# KLox Sample Programs
+# clox Sample Programs
 
-This directory contains example programs demonstrating various features of the KLox language.
+This directory contains example programs demonstrating features of this clox implementation.
 
 ## Valid Examples
 
@@ -13,13 +13,13 @@ This directory contains example programs demonstrating various features of the K
 
 ### Advanced Features
 - **closures.lox** - Demonstrates lexical scoping and closures
-- **anonymous_functions.lox** - Lambda/anonymous function examples
+- **anonymous_functions.lox** - Higher-order function examples
 
 ### Object-Oriented Programming
 - **classes.lox** - Classes and methods
 - **inheritance.lox** - Class inheritance
 - **super.lox** - Superclass method calls
-- **static_methods.lox** - Static methods on classes
+- **static_methods.lox** - Class method usage example
 
 ### Native Functions
 - **native_lox.lox** - Using built-in clock() function
@@ -46,17 +46,17 @@ The `errors/` directory contains programs that demonstrate the beautiful error r
 
 To run a valid example:
 ```bash
-java -jar build/libs/klox.jar samples/fibonacci.lox
+./clox examples/fibonacci.lox
 ```
 
-To see the beautiful error reporting in action:
+To see error reporting examples:
 ```bash
-java -jar build/libs/klox.jar samples/errors/parse_error.lox
+./clox examples/errors/parse_error.lox
 ```
 
 To start the interactive REPL:
 ```bash
-java -jar build/libs/klox.jar
+./clox
 ```
 
 ## Features Demonstrated
@@ -69,6 +69,6 @@ java -jar build/libs/klox.jar
 - ✓ Conditionals (if/else)
 - ✓ Operators (arithmetic, comparison, logical)
 - ✓ Native functions (clock, println, scan, input)
-- ✓ Static methods
+- ✓ Method calls and inheritance
 - ✓ Super keyword for parent class access
 - ✓ Beautiful Rust-style error reporting with source context

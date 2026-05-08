@@ -5,12 +5,12 @@ class Person {
   }
   
   introduce() {
-    println("Hi, I'm " + this.name + " and I'm " + this.age + " years old");
+    println("Hi, I'm", this.name, "and I'm", this.age, "years old");
   }
   
   birthday() {
     this.age = this.age + 1;
-    println(this.name + " is now " + this.age);
+    println(this.name, "is now", this.age);
   }
 }
 

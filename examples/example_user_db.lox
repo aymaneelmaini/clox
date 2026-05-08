@@ -3,20 +3,20 @@ class User {
     this.name = name;
     this.email = email;
   }
-  
-  static create() {
-    var userName = input("Enter name: ");
-    var userEmail = input("Enter email: ");
-    return User(userName, userEmail);
-  }
-  
+
   display() {
-    println("User: " + this.name + " (" + this.email + ")");
+    println("User:", this.name, "(", this.email, ")");
   }
 }
 
-var user1 = User.create();
+fun createUser() {
+  var userName = input("Enter name: ");
+  var userEmail = input("Enter email: ");
+  return User(userName, userEmail);
+}
+
+var user1 = createUser();
 user1.display();
 
-var user2 = User.create();
+var user2 = createUser();
 user2.display();

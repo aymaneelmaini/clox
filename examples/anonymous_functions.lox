@@ -1,10 +1,15 @@
+fun makeMultiplier(factor) {
+  fun multiply(value) {
+    return value * factor;
+  }
+  return multiply;
+}
+
+fun apply(func, value) {
+  return func(value);
+}
+
 var numbers = 5;
-var double = fn(n) { n * 2 };
-
+var double = makeMultiplier(2);
 println(double(numbers));
-
-var apply = fn(func, value) {
-  func(value)
-};
-
 println(apply(double, 10));

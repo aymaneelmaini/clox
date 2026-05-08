@@ -1,7 +1,7 @@
 // This file demonstrates runtime error reporting
 // Division by zero error
 
-var x = 10
-var y = "hello" + x
-var z = 5 / 0
-print z
+var x = 10;
+var y = x + 2;
+var z = 5 / 0;
+print z;

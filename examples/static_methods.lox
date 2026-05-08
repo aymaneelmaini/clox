@@ -1,7 +1,9 @@
 class Math {
-  static max() {
-    return "38";
+  max(a, b) {
+    if (a > b) return a;
+    return b;
   }
 }
 
-println(Math.max());
+var math = Math();
+println(math.max(38, 12));

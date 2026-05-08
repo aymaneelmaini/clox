@@ -1,8 +1,8 @@
 fun fibonacci(n) {
   if (n <= 1) {
-    n
+    return n;
   } else {
-    fibonacci(n - 1) + fibonacci(n - 2)
+    return fibonacci(n - 1) + fibonacci(n - 2);
   }
 }
 
@@ -10,5 +10,5 @@ var start = clock();
 var result = fibonacci(30);
 var elapsed = clock() - start;
 
-println("fibonacci(30) = " + result);
-println("Computed in " + elapsed + " seconds");
+println("fibonacci(30) =", result);
+println("Computed in", elapsed, "seconds");

@@ -6,4 +6,4 @@ while (count < 1000000) {
 }
 
 var end = clock();
-println("Took " + (end - start) + " seconds");
+println("Took", end - start, "seconds");

@@ -75,6 +75,9 @@ void init_VM()
     vm.gray_stack = NULL;
 
     define_native("clock", clock_native);
+    define_native("println", println_native);
+    define_native("input", input_native);
+    define_native("scan", scan_native);
 }
 
 void free_VM()
@@ -133,7 +136,7 @@ static bool call_value(Value callee, int arg_count)
             ObjBoundMethod* bound = AS_BOUND_METHOD(callee);
             vm.stack_top[-arg_count - 1] = bound->receiver;
             return call(bound->method, arg_count);
-        case OBJ_INSTANCE:
+        case OBJ_CLASS:
             ObjClass* klass = AS_CLASS(callee);
             vm.stack_top[-arg_count - 1] = OBJ_VAL(new_instance(klass));
 
@@ -225,7 +228,7 @@ static void close_upvalues(Value* last)
         ObjUpvalue* upvalue = vm.open_upvalues;
         upvalue->closed = *upvalue->location;
         upvalue->location = &upvalue->closed;
-        vm.open_upvalues->next = upvalue->next;
+        vm.open_upvalues = upvalue->next;
     }
 }
 
@@ -483,8 +486,22 @@ static InterpretResult run()
             BINARY_OP(NUMBER_VAL, *);
             break;
         case OP_DIVIDE:
-            BINARY_OP(NUMBER_VAL, /);
+        {
+            if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
+            {
+                runtime_error("Operands must be numbers ");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            double b = AS_NUMBER(pop());
+            double a = AS_NUMBER(pop());
+            if (b == 0)
+            {
+                runtime_error("Division by zero");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            push(NUMBER_VAL(a / b));
             break;
+        }
         case OP_NOT:
             push(BOOL_VAL(is_falsey(pop())));
             break;
